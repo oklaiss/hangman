@@ -107,7 +107,7 @@ Here's this module being exercised from an iex session:
 
     iex(13)> { game, state, guess } = G.make_move(game, "b")
     . . .
-    iex(14)> state                                          
+    iex(14)> state
     :bad_guess
 
     iex(15)> { game, state, guess } = G.make_move(game, "f")
@@ -142,6 +142,14 @@ Here's this module being exercised from an iex session:
 
   @spec new_game :: state
   def new_game do
+    new_word = Hangman.Dictionary.random_word
+    # initialize with random word and empty mapset for guessed
+    %{
+      word:         new_word,
+      letters_left: individual_letters(new_word),
+      guessed:      MapSet.new,
+      turns_left:   10
+    }
   end
 
 
@@ -152,6 +160,12 @@ Here's this module being exercised from an iex session:
   """
   @spec new_game(binary) :: state
   def new_game(word) do
+    %{
+      word:         word,
+      letters_left: individual_letters(word),
+      guessed:      MapSet.new,
+      turns_left:   10
+    }
   end
 
 
@@ -177,6 +191,32 @@ Here's this module being exercised from an iex session:
 
   @spec make_move(state, ch) :: { state, atom, optional_ch }
   def make_move(state, guess) do
+    # If letter matches remove from letters left
+    { matching_guessed_letter, state } = state |> pop_in([:letters_left, guess])
+    # Update state based on if guess was correct
+    if !matching_guessed_letter do
+      # decrement turns left
+      state = %{ state | turns_left: state.turns_left - 1 }
+    # else
+    #   state = state
+    end
+    # add letter guessed
+    state = %{ state | guessed: MapSet.put(state.guessed, guess) }
+    # Set game status to lost, bad guess, won, good guess
+    cond do
+      # game over
+      state.turns_left == 0
+        -> { state, :lost, nil }
+      # no match
+      !matching_guessed_letter
+        -> { state, :bad_guess, guess }
+      # guess matches, no letters left to guess, game won
+      state.letters_left |> Map.keys |> length == 0
+        -> { state, :won, nil }
+      # guess matches
+      matching_guessed_letter
+        -> { state, :good_guess, guess }
+    end
   end
 
 
@@ -187,6 +227,7 @@ Here's this module being exercised from an iex session:
   """
   @spec word_length(state) :: integer
   def word_length(%{ word: word }) do
+    String.length(word)
   end
 
   @doc """
@@ -199,6 +240,7 @@ Here's this module being exercised from an iex session:
 
   @spec letters_used_so_far(state) :: [ binary ]
   def letters_used_so_far(state) do
+    MapSet.to_list(state.guessed)
   end
 
   @doc """
@@ -211,6 +253,7 @@ Here's this module being exercised from an iex session:
 
   @spec turns_left(state) :: integer
   def turns_left(state) do
+    state.turns_left
   end
 
   @doc """
@@ -224,6 +267,14 @@ Here's this module being exercised from an iex session:
 
   @spec word_as_string(state, boolean) :: binary
   def word_as_string(state, reveal \\ false) do
+    guessed = [" " | letters_used_so_far(state)] |> Enum.join
+    if reveal do
+      word = state.word
+    else
+      # regex match
+      word = String.replace(state.word, ~r/[^#{guessed}]/, "_")
+    end
+    word |> String.graphemes |> Enum.join(" ")
   end
 
   ###########################
@@ -231,5 +282,11 @@ Here's this module being exercised from an iex session:
   ###########################
 
   # Your private functions go here
+
+  defp individual_letters(word) do
+    word
+    |> String.graphemes
+    |> Map.new(&{&1, true})
+  end
 
  end
