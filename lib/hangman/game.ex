@@ -191,9 +191,9 @@ Here's this module being exercised from an iex session:
 
   @spec make_move(state, ch) :: { state, atom, optional_ch }
   def make_move(state, guess) do
-    # If letter matches remove from letters left
+    # if letter matches remove from letters left
     { matching_guessed_letter, state } = state |> pop_in([:letters_left, guess])
-    # Update state based on if guess was correct
+    # update state based on if guess was correct
     if !matching_guessed_letter do
       # decrement turns left
       state = %{ state | turns_left: state.turns_left - 1 }
@@ -202,7 +202,7 @@ Here's this module being exercised from an iex session:
     end
     # add letter guessed
     state = %{ state | guessed: MapSet.put(state.guessed, guess) }
-    # Set game status to lost, bad guess, won, good guess
+    # set game status to lost, bad guess, won, good guess
     cond do
       # game over
       state.turns_left == 0
