@@ -204,7 +204,7 @@ Here's this module being exercised from an iex session:
     state = %{ state | guessed: MapSet.put(state.guessed, guess) }
     # set game status to lost, bad guess, won, good guess
     cond do
-      # game over
+      # no turns left, game over
       state.turns_left == 0
         -> { state, :lost, nil }
       # no match

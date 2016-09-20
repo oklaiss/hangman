@@ -1,6 +1,9 @@
 # Hangman
 
-**TODO: Add description**
+This application allows a user to play Hangman via a the command line
+
+Owen Klaiss
+41152882
 
 ## Installation
 
