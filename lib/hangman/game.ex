@@ -200,7 +200,6 @@ Here's this module being exercised from an iex session:
     else
       state
     end
-    # state = if !matching_guessed_letter, do: %{ state | turns_left: state.turns_left - 1 }, else: state
     # add letter guessed
     state = %{ state | guessed: MapSet.put(state.guessed, guess) }
     # set game status to lost, bad guess, won, good guess
@@ -276,7 +275,6 @@ Here's this module being exercised from an iex session:
       # regex match
       String.replace(state.word, ~r/[^#{guessed}]/, "_")
     end
-    # word = if reveal, do: state.word, else: String.replace(state.word, ~r/[^#{guessed}]/, "_")
     word |> String.graphemes |> Enum.join(" ")
   end
 
