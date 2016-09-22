@@ -194,15 +194,17 @@ Here's this module being exercised from an iex session:
     # if letter matches remove from letters left
     { matching_guessed_letter, state } = state |> pop_in([:letters_left, guess])
     # update state based on if guess was correct
-    if !matching_guessed_letter do
+    state = if !matching_guessed_letter do
       # decrement turns left
-      state = %{ state | turns_left: state.turns_left - 1 }
-    # else
-    #   state = state
+      %{ state | turns_left: state.turns_left - 1 }
+    else
+      state
     end
+    # state = if !matching_guessed_letter, do: %{ state | turns_left: state.turns_left - 1 }, else: state
     # add letter guessed
     state = %{ state | guessed: MapSet.put(state.guessed, guess) }
     # set game status to lost, bad guess, won, good guess
+
     cond do
       # no turns left, game over
       state.turns_left == 0
@@ -268,12 +270,13 @@ Here's this module being exercised from an iex session:
   @spec word_as_string(state, boolean) :: binary
   def word_as_string(state, reveal \\ false) do
     guessed = [" " | letters_used_so_far(state)] |> Enum.join
-    if reveal do
-      word = state.word
+    word = if reveal do
+      state.word
     else
       # regex match
-      word = String.replace(state.word, ~r/[^#{guessed}]/, "_")
+      String.replace(state.word, ~r/[^#{guessed}]/, "_")
     end
+    # word = if reveal, do: state.word, else: String.replace(state.word, ~r/[^#{guessed}]/, "_")
     word |> String.graphemes |> Enum.join(" ")
   end
 
